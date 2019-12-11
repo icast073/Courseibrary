@@ -3,6 +3,7 @@ using CourseLibrary.API.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CourseLibrary.API.Profiles.ResourceParameters;
 
 namespace CourseLibrary.API.Services
 {
@@ -97,15 +98,36 @@ namespace CourseLibrary.API.Services
             return _context.Authors.Any(a => a.Id == authorId);
         }
 
-        public IEnumerable<Author> GetAuthors(string mainCategory)
+        public IEnumerable<Author> GetAuthors(AuthorFilters authorFilters)
         {
-            if (string.IsNullOrEmpty(mainCategory))
+            var collection = _context.Authors as IQueryable<Author>;
+            if (authorFilters == null)
+            {
+                throw new ArgumentNullException(nameof(authorFilters));
+            }
+
+            if (string.IsNullOrWhiteSpace(authorFilters.MainCategory) && string.IsNullOrWhiteSpace(authorFilters.SearchQuery))
             {
                 return GetAuthors();
             }
 
-            mainCategory = mainCategory.Trim();
-            return _context.Authors.Where(a => a.MainCategory == mainCategory).ToList();
+            if (!string.IsNullOrWhiteSpace(authorFilters.MainCategory))
+            {
+                authorFilters.MainCategory = authorFilters.MainCategory.Trim();
+                collection = collection.Where(m => m.MainCategory.Contains(authorFilters.MainCategory));
+            }
+
+            if (!string.IsNullOrWhiteSpace(authorFilters.SearchQuery))
+            {
+                authorFilters.SearchQuery = authorFilters.SearchQuery.Trim();
+                collection = collection.Where(a => a.MainCategory.Contains(authorFilters.SearchQuery)
+                                                   || a.FirstName.Contains(authorFilters.SearchQuery)
+                                                   || a.LastName.Contains(authorFilters.SearchQuery));
+            }
+            
+            return collection.ToList();
+
+
         }
 
         public void DeleteAuthor(Author author)

@@ -4,6 +4,7 @@ using System.Linq;
 using AutoMapper;
 using CourseLibrary.API.Entities;
 using CourseLibrary.API.Model;
+using CourseLibrary.API.Profiles.ResourceParameters;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -27,13 +28,12 @@ namespace CourseLibrary.API.Controllers
         }
 
         [HttpGet()]
-        [HttpHead]
-        public ActionResult<IEnumerable<AuthorDto>> GetAuthors(
-            [FromQuery(Name= "")] string mainCategory)
+        //[HttpHead]
+        public ActionResult<IEnumerable<AuthorDto>> GetAuthors([FromQuery]AuthorFilters authorFilters)
         {
             try
             {
-                var authorFromRepo = _courseLibraryRepository.GetAuthors();
+                var authorFromRepo = _courseLibraryRepository.GetAuthors(authorFilters);
                 return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorFromRepo));
             }
             catch (Exception ex)

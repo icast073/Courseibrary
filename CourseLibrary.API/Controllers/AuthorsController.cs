@@ -44,7 +44,7 @@ namespace CourseLibrary.API.Controllers
             
         }
 
-        [HttpGet("{authorId}")]
+        [HttpGet("{authorId}", Name = "GetAuthor")]
         public IActionResult GetAuthor(Guid authorId)
         {
             try

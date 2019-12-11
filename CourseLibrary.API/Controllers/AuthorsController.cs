@@ -61,6 +61,29 @@ namespace CourseLibrary.API.Controllers
             
         }
 
-       
+        [HttpPost]
+        public ActionResult<AuthorDto> CreateAuthor(AuthorForCreationDto author)
+        {
+            try
+            {
+                var authorEntity = _mapper.Map<Author>(author);
+                _courseLibraryRepository.AddAuthor(authorEntity);
+                _courseLibraryRepository.Save();
+
+                var authorToReturn = _mapper.Map<AuthorDto>(authorEntity);
+                return CreatedAtRoute("GetAuthor",
+                    new { authorId = authorToReturn.Id },
+                    authorToReturn);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{ex.Message}");
+                return StatusCode(500, "Internal server error, try again later.");
+            }
+        }
+
+
+
+
     }
 }

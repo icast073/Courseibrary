@@ -43,7 +43,7 @@ namespace CourseLibrary.API.Controllers
             }
         }
 
-        [HttpGet("{courseId}")]
+        [HttpGet("{courseId}", Name= "GetCourseForAuthor")]
         public ActionResult<IEnumerable<CourseDto>> GetCourseForAuthor(Guid authorId, Guid courseId)
         {
             try
@@ -57,6 +57,37 @@ namespace CourseLibrary.API.Controllers
                 _logger.LogError(ex, $"{ex.Message}");
                 return StatusCode(500, "Internal server error, try again later.");
             }
+        }
+
+        [HttpPost]
+        public ActionResult<CourseDto> CreateCourseForAuthor(Guid authorId, CourseForCreationDto course)
+        {
+            try
+            {
+                if (!_courseLibraryRepository.AuthorExists(authorId))
+                {
+                    return NotFound();
+                }
+
+                var courseEntity = _mapper.Map<Course>(course);
+                _courseLibraryRepository.AddCourse(authorId, courseEntity);
+                _courseLibraryRepository.Save();
+
+                var courseToReturn = _mapper.Map<CourseDto>(courseEntity);
+                return CreatedAtRoute("GetCourseForAuthor",
+                    new
+                    {
+                        authorId = authorId,
+                        courseId = courseToReturn.Id
+                    }, courseToReturn);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{ex.Message}");
+                return StatusCode(500, "Internal server error, try again later.");
+            }
+
+
         }
 
 

@@ -5,7 +5,6 @@ using CourseLibrary.API.Entities;
 using CourseLibrary.API.Model;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 
 namespace CourseLibrary.API.Controllers
@@ -59,6 +58,7 @@ namespace CourseLibrary.API.Controllers
             }
         }
 
+
         [HttpPost]
         public ActionResult<CourseDto> CreateCourseForAuthor(Guid authorId, CourseForCreationDto course)
         {
@@ -86,10 +86,7 @@ namespace CourseLibrary.API.Controllers
                 _logger.LogError(ex, $"{ex.Message}");
                 return StatusCode(500, "Internal server error, try again later.");
             }
-
-
         }
-
 
     }
 }

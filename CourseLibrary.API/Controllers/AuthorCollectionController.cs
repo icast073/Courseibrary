@@ -1,14 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using CourseLibrary.API.Entities;
+using CourseLibrary.API.Helpers;
 using CourseLibrary.API.Model;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseLibrary.API.Controllers
 {
-    [Route("api/authorCollections")]
     [ApiController]
+    [Route("api/authorcollections")]
+    
     public class AuthorCollectionController : ControllerBase
     {
         private readonly ICourseLibraryRepository _courseLibraryRepository;
@@ -21,8 +25,30 @@ namespace CourseLibrary.API.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("({id})", Name = "GetAuthorCollection")]
+        public IActionResult GetAuthorCollection(
+            [FromRoute] 
+            [ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> ids)
+        {
+            if (ids is null)
+            {
+                return BadRequest();
+            }
+
+            var authorEntities = _courseLibraryRepository.GetAuthors(ids);
+
+            if (ids.Count() != authorEntities.Count())
+            {
+                return NotFound();
+            }
+
+            var authorToReturn = _mapper.Map<IEnumerable<AuthorDto>>(authorEntities);
+            return Ok(authorToReturn);
+        }
+
+
         [HttpPost]
-        public ActionResult<IEnumerable<AuthorForCreationDto>> CreateAuthorCollection(
+        public ActionResult<IEnumerable<AuthorDto>> CreateAuthorCollection(
             IEnumerable<AuthorForCreationDto> authorCollection)
         {
             var authorEntities = _mapper.Map<IEnumerable<Author>>(authorCollection);
@@ -30,9 +56,15 @@ namespace CourseLibrary.API.Controllers
             {
                 _courseLibraryRepository.AddAuthor(author);
             }
+
             _courseLibraryRepository.Save();
 
-            return Ok();
+            var authorCollectionToReturn = _mapper.Map<IEnumerable<AuthorDto>>(authorEntities);
+            var idsAsString = string.Join(",", authorCollectionToReturn.Select(a => a.Id));
+            
+            return CreatedAtRoute("GetAuthorCollection",
+             new { id = idsAsString },
+             authorCollectionToReturn);
         }
 
     }

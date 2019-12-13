@@ -1,10 +1,11 @@
 using System;
-using System.Reflection;
 using AutoMapper;
 using CourseLibrary.API.DbContexts;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,8 +29,27 @@ namespace CourseLibrary.API
            {
                //if it is set to false, the API will respond resources in the default supported format, by default is false
                setupAction.ReturnHttpNotAcceptable = true;
-           }).AddXmlDataContractSerializerFormatters();
+           }).AddXmlDataContractSerializerFormatters()
 
+           .ConfigureApiBehaviorOptions(setupAction => setupAction.InvalidModelStateResponseFactory = context =>
+               {
+                   var problemDetails = new ValidationProblemDetails(context.ModelState)
+                   {
+                       Type = "https://courselibrary.com/modelvalidationproblem",
+                       Title = "One or more model validation error occured",
+                       Status = StatusCodes.Status422UnprocessableEntity,
+                       Detail = "See error for details.",
+                       Instance = context.HttpContext.Request.Path
+                   };
+
+                   problemDetails.Extensions.Add("traceId", context.HttpContext.TraceIdentifier);
+                   return new UnprocessableEntityObjectResult(problemDetails)
+                   {
+                       ContentTypes = { "application/problem+json" }
+                   };
+               });
+
+           
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddScoped<ICourseLibraryRepository, CourseLibraryRepository>();
 

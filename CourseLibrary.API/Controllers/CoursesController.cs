@@ -88,5 +88,29 @@ namespace CourseLibrary.API.Controllers
             }
         }
 
+        [HttpPut("{courseId}")]
+        public ActionResult UpdateCourseForAuthor(Guid authorId, Guid courseId, CourseForUpdateDto course)
+        {
+            if (!_courseLibraryRepository.AuthorExists(authorId))
+            {
+                return NotFound();
+            }
+
+            var courseForAuthorFromRepo = _courseLibraryRepository.GetCourse(authorId, courseId);
+
+            if (courseForAuthorFromRepo is null)
+            {  
+                return NotFound();
+            }
+                                                          
+            //map the entity to a CourseForUpdateDto      
+            //apply the updated field values to that dto  
+            //map the CourseFrUpdateDto back to an entity 
+            _mapper.Map(course, courseForAuthorFromRepo); 
+            _courseLibraryRepository.UpdateCourse(courseForAuthorFromRepo);
+            _courseLibraryRepository.Save();
+            return NoContent();
+        }
+
     }
 }

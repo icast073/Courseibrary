@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CourseLibrary.API.Helpers;
+using CourseLibrary.API.Model;
 using CourseLibrary.API.Profiles.ResourceParameters;
 
 namespace CourseLibrary.API.Services
@@ -11,10 +12,13 @@ namespace CourseLibrary.API.Services
     public class CourseLibraryRepository : ICourseLibraryRepository, IDisposable
     {
         private readonly CourseLibraryContext _context;
+        private readonly IPropertyMappingService _propertyMappingService;
 
-        public CourseLibraryRepository(CourseLibraryContext context)
+        public CourseLibraryRepository(CourseLibraryContext context, IPropertyMappingService propertyMappingService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _propertyMappingService =
+                propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
         }
 
         public void AddCourse(Guid authorId, Course course)
@@ -120,6 +124,17 @@ namespace CourseLibrary.API.Services
                                                    || a.FirstName.Contains(authorFilters.SearchQuery)
                                                    || a.LastName.Contains(authorFilters.SearchQuery));
             }
+
+            if (!string.IsNullOrEmpty(authorFilters.OrderBy))
+            {
+                if (authorFilters.OrderBy.ToLowerInvariant() == "name")
+                {
+                    collection = collection.OrderBy(a => a.FirstName).ThenBy(a => a.LastName);
+                }
+
+                var authorPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<AuthorDto, Author>();
+                //collection.ApplySort(authorFilters.OrderBy, _mappingDictionary);
+            }
             return PagedList<Author>.Create(collection, authorFilters.PageNumber, authorFilters.PageSize);
         }
 
@@ -155,10 +170,11 @@ namespace CourseLibrary.API.Services
                 throw new ArgumentNullException(nameof(authorIds));
             }
 
-            return _context.Authors.Where(a => authorIds.Contains(a.Id))
-                .OrderBy(a => a.FirstName)
-                .OrderBy(a => a.LastName)
-                .ToList();
+            return _context.Authors
+                                .Where(a => authorIds.Contains(a.Id))
+                                    .OrderBy(a => a.FirstName)
+                                        .OrderBy(a => a.LastName)
+                                            .ToList();
         }
 
         public void UpdateAuthor(Author author)

@@ -35,7 +35,8 @@ namespace CourseLibrary.API
                 setupAction.SerializerSettings.ContractResolver =
                    new CamelCasePropertyNamesContractResolver();
             })
-             .AddXmlDataContractSerializerFormatters()
+                
+                .AddXmlDataContractSerializerFormatters()
             .ConfigureApiBehaviorOptions(setupAction =>
             {
                 setupAction.InvalidModelStateResponseFactory = context =>
@@ -59,9 +60,8 @@ namespace CourseLibrary.API
             });
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
             services.AddScoped<ICourseLibraryRepository, CourseLibraryRepository>();
-
+            services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddDbContext<CourseLibraryContext>(options =>
             {
                 options.UseSqlServer(
@@ -86,13 +86,10 @@ namespace CourseLibrary.API
                         await context.Response.WriteAsync("An unexpected fault happened. Try again later.");
                     });
                 });
-
             }
 
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

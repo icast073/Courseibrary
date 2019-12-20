@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AutoMapper;
 using CourseLibrary.API.Entities;
+using CourseLibrary.API.Helpers;
 using CourseLibrary.API.Model;
 using CourseLibrary.API.Profiles.ResourceParameters;
 using CourseLibrary.API.Services;
@@ -26,13 +27,14 @@ namespace CourseLibrary.API.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        [HttpGet()]
+        [HttpGet(Name = "GetAuthors")]
         //[HttpHead]
         public ActionResult<IEnumerable<AuthorDto>> GetAuthors([FromQuery]AuthorFilters authorFilters)
         {
             try
             {
                 var authorFromRepo = _courseLibraryRepository.GetAuthors(authorFilters);
+                //Url.Link()
                 return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorFromRepo));
             }
             catch (Exception ex)
@@ -87,6 +89,28 @@ namespace CourseLibrary.API.Controllers
             Response.Headers.Add("Allow","GET,OPTIONS,POST");
             return Ok();
         }
-        
+
+        public string CreateAuthorResouceUri(AuthorFilters authorResourceParameters, ResourceUriType type)
+        {
+            switch (type)
+            {
+                case ResourceUriType.PreviousPage: return Url.Link("GetAuthors", new
+                    {
+                        pageNumber = authorResourceParameters.PageNumber - 1,
+                        pageSize = authorResourceParameters.PageSize,
+                        mainCategory = authorResourceParameters.MainCategory,
+                        searchQuery = authorResourceParameters.SearchQuery
+                    });
+                case ResourceUriType.NextPage:
+                    return Url.Link("GetAuthors", new
+                    {
+                        pageNumber = authorResourceParameters.PageNumber + 1,
+                        pageSize = authorResourceParameters.PageSize,
+                        mainCategory = authorResourceParameters.MainCategory,
+                        searchQuery = authorResourceParameters.SearchQuery
+                    });
+            }
+
+        }
     }
 }

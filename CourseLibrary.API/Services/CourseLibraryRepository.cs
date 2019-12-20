@@ -3,6 +3,7 @@ using CourseLibrary.API.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CourseLibrary.API.Helpers;
 using CourseLibrary.API.Profiles.ResourceParameters;
 
 namespace CourseLibrary.API.Services
@@ -98,17 +99,12 @@ namespace CourseLibrary.API.Services
             return _context.Authors.Any(a => a.Id == authorId);
         }
 
-        public IEnumerable<Author> GetAuthors(AuthorFilters authorFilters)
+        public PagedList<Author> GetAuthors(AuthorFilters authorFilters)
         {
             var collection = _context.Authors as IQueryable<Author>;
             if (authorFilters == null)
             {
                 throw new ArgumentNullException(nameof(authorFilters));
-            }
-
-            if (string.IsNullOrWhiteSpace(authorFilters.MainCategory) && string.IsNullOrWhiteSpace(authorFilters.SearchQuery))
-            {
-                return GetAuthors();
             }
 
             if (!string.IsNullOrWhiteSpace(authorFilters.MainCategory))
@@ -124,10 +120,7 @@ namespace CourseLibrary.API.Services
                                                    || a.FirstName.Contains(authorFilters.SearchQuery)
                                                    || a.LastName.Contains(authorFilters.SearchQuery));
             }
-            
-            return collection.ToList();
-
-
+            return PagedList<Author>.Create(collection, authorFilters.PageNumber, authorFilters.PageSize);
         }
 
         public void DeleteAuthor(Author author)

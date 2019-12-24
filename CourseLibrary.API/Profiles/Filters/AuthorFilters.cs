@@ -1,4 +1,4 @@
-﻿namespace CourseLibrary.API.Profiles.ResourceParameters
+﻿namespace CourseLibrary.API.Profiles.Filters
 {
     public class AuthorFilters
     {
@@ -11,7 +11,7 @@
         public int PageSize
         {
             get => _pageSize;
-            set => _pageSize = (value > maxPageSize) ? maxPageSize : value;
+            set => _pageSize = value > maxPageSize ? maxPageSize : value;
         }
 
         public string OrderBy { get; set; } = "Name";

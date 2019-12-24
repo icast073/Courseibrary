@@ -4,11 +4,11 @@ using AutoMapper;
 using CourseLibrary.API.Entities;
 using CourseLibrary.API.Helpers;
 using CourseLibrary.API.Model;
-using CourseLibrary.API.Profiles.ResourceParameters;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using CourseLibrary.API.Profiles.Filters;
 
 namespace CourseLibrary.API.Controllers
 {

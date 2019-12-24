@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CourseLibrary.API.Helpers;
 using CourseLibrary.API.Model;
-using CourseLibrary.API.Profiles.ResourceParameters;
+using CourseLibrary.API.Profiles.Filters;
 
 namespace CourseLibrary.API.Services
 {
@@ -127,13 +127,8 @@ namespace CourseLibrary.API.Services
 
             if (!string.IsNullOrEmpty(authorFilters.OrderBy))
             {
-                if (authorFilters.OrderBy.ToLowerInvariant() == "name")
-                {
-                    collection = collection.OrderBy(a => a.FirstName).ThenBy(a => a.LastName);
-                }
-
-                var authorPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<AuthorDto, Author>();
-                //collection.ApplySort(authorFilters.OrderBy, _mappingDictionary);
+               var authorPropertyMappingDictionary = _propertyMappingService.GetPropertyMapping<AuthorDto, Author>();
+               collection = collection.ApplySort(authorFilters.OrderBy, authorPropertyMappingDictionary);
             }
             return PagedList<Author>.Create(collection, authorFilters.PageNumber, authorFilters.PageSize);
         }

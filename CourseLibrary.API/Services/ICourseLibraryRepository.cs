@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using CourseLibrary.API.Helpers;
-using CourseLibrary.API.Profiles.ResourceParameters;
+using CourseLibrary.API.Profiles.Filters;
 
 namespace CourseLibrary.API.Services
 {
